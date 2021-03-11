@@ -31,8 +31,8 @@ type TypeHeapStats = {
                 totalSize = x.totalSize + size
                 count = x.count + 1L
         }
+
 let loadDump (filePath) =
-    
     let target = DataTarget.LoadDump filePath
     let runtime = target.ClrVersions.[0].CreateRuntime()
     MemoryDump.Create target runtime
@@ -67,9 +67,42 @@ let computeHeapStatistics (dump : MemoryDump) =
         )
     init.Values.ToList()
 
-let mydump = loadDump (IO.Path.Join(__SOURCE_FILE__,"..", "dumps", "mydump.dump"))
+let mydump = loadDump (IO.Path.Join(__SOURCE_FILE__,"..", "dumps", "dump.dump"))
+
+type Suffixes = 
+| B of size : uint64
+| KB of size : uint64
+| MB of size : uint64
+| GB of size : uint64
+| TB of size : uint64
+
+let printSize suffix = 
+    match suffix with
+    | B s -> $"{s}B"
+    | KB s -> $"{s}KB"
+    | MB s -> $"{s}MB"
+    | GB s -> $"{s}GB"
+    | TB s -> $"{s}TB"
+
+let printHumanSize (bytes: uint64) =
+    let suffix = 
+        if bytes = 0UL then
+            B 0UL
+        else
+            let dbytes = Convert.ToDouble(bytes)
+            let place = Convert.ToInt32(Math.Floor(Math.Log(dbytes, 1024.)))
+            let exp = Math.Pow(1024., (float) place)
+            let size = Math.Round( (float) bytes / exp, 1) |> Convert.ToUInt64
+            if place = 0 then B size 
+            elif place = 1 then KB size
+            elif place = 2 then MB size
+            elif place = 3 then GB size
+            else TB size
+    printSize suffix
+
 
 let heap = computeHeapStatistics mydump
 heap
 |> Seq.sortByDescending(fun d -> d.totalSize)
 |> Seq.take 10
+|> Seq.iter (fun x -> printfn "Heap : %A" (x.clrType, x.count, (printHumanSize(x.totalSize))))

@@ -100,9 +100,13 @@ let printHumanSize (bytes: uint64) =
             else TB size
     printSize suffix
 
+let inline commas (x : ^a) =
+    (^a : (member ToString : string -> string) (x, "N0"))
 
 let heap = computeHeapStatistics mydump
 heap
 |> Seq.sortByDescending(fun d -> d.totalSize)
 |> Seq.take 10
-|> Seq.iter (fun x -> printfn "Heap : %A" (x.clrType, x.count, (printHumanSize(x.totalSize))))
+|> Seq.iteri (fun i x -> 
+    printfn $"{i + 1}. {x.clrType}. Count: {commas x.count}. Total Size: {printHumanSize x.totalSize}"
+)

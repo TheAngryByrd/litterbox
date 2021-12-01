@@ -11,3 +11,8 @@ Run the FSI via `dotnet fsi fsi-dotnet-dump-analyzer.fsx`, with your own changes
 Edit the script to your heart's content.
 
 _Alternatively_, run `dotnet fsi` and run `#load "fsi-dotnet-dump-analyzer.fsx`, then proceed to play around in FSI with your references loaded.
+
+
+### Why the name litterbox?
+
+We're playing with dotnet-dumps in a sandbox so...
